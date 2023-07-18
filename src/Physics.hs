@@ -36,8 +36,8 @@ data Ball = Ball
     }
 
 type BallMetaData = (Int, (Int, Int))
--- (bMD, (Player1 score, Player2 score))
--- bMD explained: Previous Collision. What object did it hit last? Cannot hit same player twice in row.
+-- (pC, (Player1 score, Player2 score))
+-- pC explained: Previous Collision. What object did it hit last? Cannot hit same player twice in row.
 -- 0: Wall. Can hit anything.
 -- 1: Player1. Can't hit Player1
 -- 2: Player2. Can't hit Player2
