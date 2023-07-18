@@ -25,8 +25,8 @@ drawingFunc (ball, player1, player2) = Pictures [courtYard :: Picture, drawScore
 
 
 inputHandler :: Event -> GameState -> GameState
-inputHandler (EventKey (SpecialKey KeyUp)    Down _ _) (ball, (Player pPos (x1',y1')), p2) = (ball, Player pPos (x1',y1'+250), p2)
-inputHandler (EventKey (SpecialKey KeyDown)  Down _ _) (ball, (Player pPos (x1',y1')), p2) = (ball, Player pPos (x1',y1'-250), p2)
+inputHandler (EventKey (SpecialKey KeyUp)    Down _ _) (ball, (Player pPos (x1',y1')), p2) = (ball, Player pPos (x1',y1'+280), p2)
+inputHandler (EventKey (SpecialKey KeyDown)  Down _ _) (ball, (Player pPos (x1',y1')), p2) = (ball, Player pPos (x1',y1'-280), p2)
 inputHandler _ w = w
 
 
@@ -34,7 +34,7 @@ playPong :: IO ()
 playPong = do
 
     -- animate windowDisplay aquamarine animateCircle
-    let startBall = Ball (0,0) (-360, 230) (0,-100) (0,(0,0))
+    let startBall = Ball (0,200) (-360, 230) (0,-160) (0,(0,0))
     let player1 = Player (-xPosPlayer, 0) (0,0)
     let player2 = Player (xPosPlayer, 0) (0,270)
     let gameState = (startBall, player1, player2) :: GameState
