@@ -1,14 +1,11 @@
 module Main where
 
-
-import Launcher (printBuildInfo)
 import GUI (playPong)
 
 
 main :: IO ()
 main = do
 
-    printBuildInfo
 
     putStrLn ("\n" ++ "Launching GUI...")
 
