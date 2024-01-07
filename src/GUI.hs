@@ -35,8 +35,8 @@ drawingFunc (ball, player1, player2) = Pictures [courtYard :: Picture, drawScore
 
 
 inputHandler :: Event -> GameState -> GameState
-inputHandler (EventKey (SpecialKey KeyUp)    Down _ _) (ball, (Player pPos (x1',y1')), p2) = (ball, Player pPos (x1',y1'+280), p2)
-inputHandler (EventKey (SpecialKey KeyDown)  Down _ _) (ball, (Player pPos (x1',y1')), p2) = (ball, Player pPos (x1',y1'-280), p2)
+inputHandler (EventKey (SpecialKey KeyUp)    Down _ _) (ball, p1@(Player pPos (x1',y1')), p2) = (ball, Player pPos (x1',y1'+280), p2)
+inputHandler (EventKey (SpecialKey KeyDown)  Down _ _) (ball, p1@(Player pPos (x1',y1')), p2) = (ball, Player pPos (x1',y1'-280), p2)
 inputHandler _ w = w
 
 

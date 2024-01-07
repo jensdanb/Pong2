@@ -65,6 +65,7 @@ dtMotion dt (x, y) (x', y') = (x + x' * dt, y + y' * dt)
 -- Example: dtMotion position velocity     -> newPosition
 --          dtMotion velocity acceleration -> newVelocity
 
+
 moveAll :: Float -> GameState -> GameState
 moveAll dt (ball, player1, player2) = (ball', player1', player2')
     where ball'   = moveBall ball
@@ -75,42 +76,50 @@ moveAll dt (ball, player1, player2) = (ball', player1', player2')
           movePlayer (Player pPos pVel) = Player (dtMotion dt pPos pVel) pVel
 
 
+xInvert :: Vector -> Vector
+xInvert (x, y) = (-x, y)
+
+yInvert :: Vector -> Vector
+yInvert (x, y) = (x, -y)
+
+
 --- Collision Functions ---
 
 collisionCheck :: GameState -> GameState
-collisionCheck (ball, player1, player2) = (ball', player1', player2')
+collisionCheck gameState@(ball, player1, player2) = (ball', player1', player2')
     where
-        ball' = ballCollision (ballsInDanger ball) (ball, player1, player2)
+        player1' = playerWallCollision player1
+        player2' = playerWallCollision player2
+
+        ball'
+            | ballsInDanger ball = ballCollision gameState
+            | otherwise          = ball
+
         ballsInDanger :: Ball -> Bool
         ballsInDanger (Ball (x, y) _ _ _)
             | abs x > xPosPlayer - ballSize = True
             | abs y > collideTop            = True
             | otherwise                     = False
 
-        player1' = playerWallCollision (playerInDanger player1) player1
-        player2' = playerWallCollision (playerInDanger player2) player2
-        playerInDanger :: Player -> Bool
-        playerInDanger (Player (x, y) (x', y'))
-            | y' > 0 &&  y + playerSize > collideTop    = True
-            | y' < 0 &&  y - playerSize < collideBottom = True
-            | otherwise                                 = False
 
-
-ballCollision :: Bool -> GameState -> Ball
-ballCollision False (ball, player1, player2) = ball
-ballCollision _ (Ball (x, y) (x', y') acc (pC, (s1, s2)), Player (x1, y1) (x1', y1'), Player (x2, y2) (x2', y2'))
-    | ballHitsPlayer1    = Ball (x, y) (-x', y') acc (1, (s1+1, s2))
-    | ballHitsPlayer2    = Ball (x, y) (-x', y') acc (2, (s1, s2+1))
-    | sideWallCollision  = Ball (x, y) (-x', y') acc (0, (s1, s2))
-    | upDownCollision    = Ball (x, y) (x', -y') acc (0, (s1, s2))
-    | otherwise          = Ball (x, y) (x', y') acc (pC, (s1, s2))
+ballCollision :: GameState -> Ball
+ballCollision (Ball pos@(x, y) vel@(x', y') acc (pC, scores@(s1, s2)), Player pos1@(x1, y1) vel1, Player pos2@(x2, y2) vel2)
+    | ballHitsPlayer1    = Ball pos (xInvert vel) acc (1,  (s1+1, s2) )
+    | ballHitsPlayer2    = Ball pos (xInvert vel) acc (2,  (s1, s2+1) )
+    | sideWallCollision  = Ball pos (xInvert vel) acc (0,  scores )
+    | topDownCollision   = Ball pos (yInvert vel) acc (0,  scores )
+    | otherwise          = Ball pos vel           acc (pC, scores )
     where
         ballHitsPlayer1 = pC /= 1 && abs (x - x1) < ballSize && abs (y - y1) < playerSize + ballSize
         ballHitsPlayer2 = pC /= 2 && abs (x - x2) < ballSize && abs (y - y2) < playerSize + ballSize
-        sideWallCollision = ( x >= collideRight && x' > 0 ) || ( x <= collideLeft && x' < 0 )
-        upDownCollision =   ( y >= collideTop && y' > 0   ) || ( y <= collideBottom && y' < 0 )
+        sideWallCollision = x >= collideRight && x' > 0 || x <= collideLeft   && x' < 0
+        topDownCollision  = y >= collideTop   && y' > 0 || y <= collideBottom && y' < 0
 
 
-playerWallCollision :: Bool -> Player -> Player
-playerWallCollision False player = player
-playerWallCollision _ (Player pPos (x1', y1')) = Player pPos (x1', -y1')
+playerWallCollision :: Player -> Player
+playerWallCollision player@(Player pos@(x, y) vel@(x', y'))
+    | triesToEscape = Player pos (yInvert vel)
+    | otherwise     = player
+    where
+        triesToEscape = y' > 0 &&  y + playerSize > collideTop || y' < 0 &&  y - playerSize < collideBottom
+
